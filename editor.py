@@ -15,14 +15,21 @@ import subprocess
 
 DEFAULT_SERVER = 'gvim'
 
-if __name__ == '__main__':
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', dest='servername', default=DEFAULT_SERVER, type=str, action='store', help='server name')
+    parser.add_argument('-n', dest='noblock',
+            action='store_true',
+            default=os.environ.get('noblock', False))
     parser.add_argument('file', nargs='*')
     args = parser.parse_args()
+    return args
 
+if __name__ == '__main__':
+    args = parse_args()
     servername = args.servername
     files = args.file
+    block = not args.noblock
 
     if args.file:
         # Open all files in the server
@@ -31,7 +38,6 @@ if __name__ == '__main__':
         command = ('gvim --servername "{name}"'
                 ' --remote-tab'
                 ' {files}').format(files=files, name=servername)
-
         subprocess.check_call(command, shell='/bin/bash')
     else:
         # Try to open
@@ -51,3 +57,5 @@ if __name__ == '__main__':
         except:
             command = 'gvim --servername "{name}"'.format(name=servername)
             subprocess.check_call(command.split(' '))
+    if block:
+        input('Press enter when done editing: ')
