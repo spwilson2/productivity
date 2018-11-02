@@ -1,9 +1,10 @@
 
 TODO
 ====
+* Modify the log command to use a python script to launch the log so it:
+  * Insures there is an entry for the current day
 
 * Add a way to track work on this stuff.
-* Create a single file daily log.
 
 * Add a wrapper around svn patch for a single file so I don't have to manually edit the patch files.
   i.e. This type of interface::
@@ -16,3 +17,5 @@ Complete
 ========
 
 * Add blocking support into the python based editor script
+* Create a single file daily log.
+* Forward arguments from editor script to gvim.

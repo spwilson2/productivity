@@ -12,6 +12,7 @@ import argparse
 import os
 import sys
 import subprocess
+import shlex
 
 DEFAULT_SERVER = 'gvim'
 
@@ -21,7 +22,8 @@ def parse_args():
     parser.add_argument('-n', dest='noblock',
             action='store_true',
             default=os.environ.get('noblock', False))
-    parser.add_argument('file', nargs='*')
+    parser.add_argument('--forward', default=[], dest='forwarded', nargs=argparse.REMAINDER)
+    parser.add_argument('file', type=str, nargs='*')
     args = parser.parse_args()
     return args
 
@@ -30,22 +32,28 @@ if __name__ == '__main__':
     servername = args.servername
     files = args.file
     block = not args.noblock
+    forwarded_args = args.forwarded
 
     if args.file:
         # Open all files in the server
-
-        files = ' '.join(files)
-        command = ('gvim --servername "{name}"'
-                ' --remote-tab'
-                ' {files}').format(files=files, name=servername)
-        subprocess.check_call(command, shell='/bin/bash')
+        command = ['gvim']
+        command.extend(forwarded_args)
+        command.append('--servername')
+        command.append(servername)
+        command.append('--remote-tab')
+        command.extend(files)
+        # Eat the error message
+        #
+        # FIXME, just filter the expected error, not all of it
+        # E247: no registered server named ""GVIM"": Send failed.
+        #
+        err_msg = subprocess.check_output(command, stderr=subprocess.STDOUT)
     else:
-        # Try to open
-
+        # Try to open as a new tab.
+        # If the server doesn't exist, open a whole process.
         try:
-            command = ('gvim --servername "{name}"'
-                    ' --remote-send \t\t:tabnew\n').format(name=servername)
-
+            command = ('gvim --servername {name}'
+                    ' --remote-send :tabnew\n').format(name=servername)
             # Eat the error message
             #
             # FIXME, just filter the expected error, not all of it
@@ -55,7 +63,7 @@ if __name__ == '__main__':
                     command.split(' '), 
                     stderr=subprocess.STDOUT)
         except:
-            command = 'gvim --servername "{name}"'.format(name=servername)
+            command = 'gvim --servername {name}'.format(name=servername)
             subprocess.check_call(command.split(' '))
     if block:
         input('Press enter when done editing: ')
