@@ -37,48 +37,51 @@ def parse_args():
     parser.add_argument('-n', dest='noblock',
             action='store_true',
             default=os.environ.get('noblock', False))
-    parser.add_argument('--forward', default=[], dest='forwarded', nargs=argparse.REMAINDER)
+    #parser.add_argument('--forward', default=[], dest='forwarded', nargs=argparse.REMAINDER)
     parser.add_argument('file', type=str, nargs='*')
     args = parser.parse_args()
     return args
 
+def vim_server_name_exists(server_name):
+    servers = subprocess.check_output('gvim --serverlist'.split())
+    # TODO Python2 backport
+    servers = servers.decode('utf-8')
+    val = server_name in servers.split('\n')
+    return val
+
+def vim_send(server_name, cmd):
+    command = 'gvim --servername'.split()
+    command.append(server_name)
+    command.append('--remote-send')
+    command.append(cmd)
+    return subprocess.check_output(command, stderr=subprocess.STDOUT)
+
+def vim_open_files(server_name, *paths):
+    if not paths:
+        if vim_server_name_exists(server_name):
+            vim_send(server_name, ':tabnew\n')
+        else:
+            command = 'gvim --servername'.split()
+            command.append(server_name)
+            # TODO Assert output has the server doesn't exist message and nothing
+            # else.
+            out = subprocess.check_output(command, stderr=subprocess.STDOUT)
+    else:
+        command = 'gvim --servername'.split()
+        command.append(server_name)
+        command.append('--remote-tab')
+        command.extend(paths)
+        subprocess.check_call(command)
+
 if __name__ == '__main__':
     args = parse_args()
-    servername = args.servername
+    server_name = args.servername
     files = args.file
     block = not args.noblock
-    forwarded_args = args.forwarded
 
-    if files:
-        # Open all files in the server
-        command = ['gvim']
-        command.extend(forwarded_args)
-        command.append('--servername')
-        command.append(servername)
-        command.append('--remote-tab')
-        command.extend(files)
-        # Eat the error message
-        #
-        # FIXME, just filter the expected error, not all of it
-        # E247: no registered server named ""GVIM"": Send failed.
-        #
-        sp = subprocess.Popen(command, stderr=subprocess.STDOUT)
-    else:
-        # Try to open as a new tab.
-        # If the server doesn't exist, open a whole process.
-        try:
-            command = ('gvim --servername {name}'
-                    ' --remote-send :tabnew\n').format(name=servername)
-            # Eat the error message
-            #
-            # FIXME, just filter the expected error, not all of it
-            # E247: no registered server named ""GVIM"": Send failed.
-            #
-            err_msg = subprocess.check_output(
-                    command.split(' '), 
-                    stderr=subprocess.STDOUT)
-        except:
-            command = 'gvim --servername {name}'.format(name=servername)
-            subprocess.check_call(command.split(' '))
+    #FIXME add support for the forwarded args in a separate subcommand
+    #forwarded_args = args.forwarded
+
+    vim_open_files(server_name, *files)
     if block:
         input('Press enter when done editing: ')
