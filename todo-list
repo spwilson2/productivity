@@ -1,10 +1,12 @@
 
 TODO
 ====
+* Split up editor command functionality into different argument groups.
+    * Send command to editor
+    * Open editor/new tab in editor
+
 * Modify the log command to use a python script to launch the log so it:
   * Insures there is an entry for the current day
-
-* Add a way to track work on this stuff.
 
 * Add a wrapper around svn patch for a single file so I don't have to manually edit the patch files.
   i.e. This type of interface::
