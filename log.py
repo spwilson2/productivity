@@ -22,8 +22,11 @@ log_filename = args.log
 
 
 date_string = args.date
-header = '='
-date_header = '%s\n%s' % (date_string, header*len(date_string))
+header_sym = '='
+date_header = '%s\n%s' % (date_string, header_sym*len(date_string))
+
+additional_headings = ['Complete', 'Notes', 'Todo']
+heading_sym = '^'
 
 if not os.path.isfile(log_filename):
     open(log_filename, 'w').close()
@@ -34,3 +37,11 @@ with open(log_filename, 'r+') as log:
     if not matches:
         log.write(date_header)
         log.write('\n')
+        log.write('\n')
+
+        for heading in additional_headings:
+            log.write(heading)
+            log.write('\n')
+            log.write(heading_sym * len(heading))
+            log.write('\n')
+            log.write('\n')
