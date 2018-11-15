@@ -1,26 +1,33 @@
 #!/bin/bash
 
-set -e
+set -x
 
 export GIT_TRUNK=/home/landshark/sean.wilson/git/origin/trunk
-export SVN_TRUNK=""
+export SVN_TRUNK="/home/landshark/sean.wilson/rtostrunk"
 export TMPDIR="`mktemp -d`"
 
 cleanup() {
+  set +e
   cd "$GIT_TRUNK"
   git worktree remove "$TMPDIR"
   git branch -D updater
-  #rm -rf "$TMPDIR"
+}
+
+update_trunk() {
+  set -e
+  pushd "$SVN_TRUNK"
+  svn up
+  popd
 }
 
 reset_baselines() {
-  set -x
+  set -e
+  cd "$GIT_TRUNK"
 
   git checkout gitignore
   git worktree add -b updater "$TMPDIR"
 
-
-  cp -ra .svn "$TMPDIR"
+  cp -ra "$SVN_TRUNK/.svn" "$TMPDIR"
   cd "$TMPDIR"
   svn up
   git add -A
@@ -46,7 +53,6 @@ reset_baselines() {
   git checkout updater
 }
 
-
-cd "$GIT_TRUNK"
+update_trunk
 reset_baselines
 cleanup
