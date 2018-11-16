@@ -7,3 +7,4 @@ git clone "$GIT_TRUNK" $1
 cp -ra "$SVN_TRUNK/.svn" $1
 cd $1
 git checkout svn/additions
+svn up
