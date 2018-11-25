@@ -65,7 +65,7 @@ def vim_open_files(server_name, *paths):
             command.append(server_name)
             # TODO Assert output has the server doesn't exist message and nothing
             # else.
-            out = subprocess.check_output(command, stderr=subprocess.STDOUT)
+            subprocess.call(command, stderr=subprocess.STDOUT)
     else:
         command = 'gvim --servername'.split()
         command.append(server_name)
