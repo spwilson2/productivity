@@ -19,18 +19,20 @@ DEFAULT_SERVER = 'gvim'
 
 def i3_get_active_pane():
     ''':returns: The name of the currently focused i3 panel/workspace.'''
-    workspaces = subprocess.check_output('i3-msg -t get_workspaces'.split())
+    try:
+        workspaces = subprocess.check_output('i3-msg -t get_workspaces'.split())
+    except subprocess.CalledProcessError:
+        return None
     workspaces = json.loads(workspaces)
     for workspace in workspaces:
         if workspace['focused']:
             return workspace['name']
 
 def parse_args():
-
     # Try to use the currently active i3 panel as the default servername.
     i3_pane = i3_get_active_pane()
-    if i3_pane is not None:
-        default_server = i3_pane
+    if i3_pane is None:
+        i3_pane = DEFAULT_SERVER
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', dest='servername', default=i3_pane, type=str, action='store', help='server name')
