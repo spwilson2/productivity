@@ -48,7 +48,7 @@ def vim_server_name_exists(server_name):
     servers = subprocess.check_output('gvim --serverlist'.split())
     # TODO Python2 backport
     servers = servers.decode('utf-8')
-    val = server_name in servers.split('\n')
+    val = server_name in (name.upper() for name in servers.split('\n'))
     return val
 
 def vim_send(server_name, cmd):
@@ -86,4 +86,7 @@ if __name__ == '__main__':
 
     vim_open_files(server_name, *files)
     if block:
-        input('Press enter when done editing: ')
+        try:
+            input('Press enter when done editing: ')
+        except EOFError:
+            pass
