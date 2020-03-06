@@ -87,6 +87,7 @@ if __name__ == '__main__':
     vim_open_files(server_name, *files)
     if block:
         try:
-            input('Press enter when done editing: ')
+            print('Press enter when done editing: ')
+            sys.stdin.readline()
         except EOFError:
             pass
